@@ -41,6 +41,10 @@ class BlockTemplate(halfnode.CBlock):
 
         self.prevhash_bin = '' # reversed binary form of prevhash
         self.prevhash_hex = ''
+        self.statehash_bin = ''
+        self.statehash_hex = ''
+        self.utxohash_bin = ''
+        self.utxohash_hex = ''
         self.timedelta = 0
         self.curtime = 0
         self.target = 0
@@ -92,6 +96,8 @@ class BlockTemplate(halfnode.CBlock):
         self.height = data['height']
         self.nVersion = data['version']
         self.hashPrevBlock = int(data['previousblockhash'], 16)
+        self.hashStateRoot = int(data['hashstateroot'], 16)
+        self.hashUTXORoot = int(data['hashutxoroot'], 16)
         self.nBits = int(data['bits'], 16)
         self.hashMerkleRoot = 0
         self.nTime = 0
@@ -111,6 +117,14 @@ class BlockTemplate(halfnode.CBlock):
         # Reversed prevhash
         self.prevhash_bin = binascii.unhexlify(util.reverse_hash(data['previousblockhash']))
         self.prevhash_hex = "%064x" % self.hashPrevBlock
+        
+        # Reversed statehash
+        self.statehash_bin = binascii.unhexlify(util.reverse_hash(data['hashstateroot']))
+        self.statehash_hex = "%064x" % self.hashStateRoot
+        
+        # Reversed utxohash
+        self.utxohash_bin = binascii.unhexlify(util.reverse_hash(data['hashutxoroot']))
+        self.utxohash_hex = "%064x" % self.hashUTXORoot
 
         self.broadcast_args = self.build_broadcast_args()
 
@@ -131,6 +145,8 @@ class BlockTemplate(halfnode.CBlock):
         coinbase_hash (and then merkle_root) will be unique as well.'''
         job_id = self.job_id
         prevhash = binascii.hexlify(self.prevhash_bin)
+        statehash = binascii.hexlify(self.statehash_bin)
+        utxohash = binascii.hexlify(self.utxohash_bin)
         (coinb1, coinb2) = [ binascii.hexlify(x) for x in self.vtx[0]._serialized ]
         merkle_branch = [ binascii.hexlify(x) for x in self.merkletree._steps ]
         version = binascii.hexlify(struct.pack(">i", self.nVersion))
@@ -138,7 +154,7 @@ class BlockTemplate(halfnode.CBlock):
         ntime = binascii.hexlify(struct.pack(">I", self.curtime))
         clean_jobs = True
 
-        return (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, clean_jobs)
+        return (job_id, prevhash, statehash, utxohash, coinb1, coinb2, merkle_branch, version, nbits, ntime, clean_jobs)
 
     def serialize_coinbase(self, extranonce1, extranonce2):
         '''Serialize coinbase with given extranonce1 and extranonce2
@@ -162,6 +178,8 @@ class BlockTemplate(halfnode.CBlock):
         '''Serialize header for calculating block hash'''
         r  = struct.pack(">i", self.nVersion)
         r += self.prevhash_bin
+        r += self.statehash_bin
+        r += self.utxohash_bin
         r += util.ser_uint256_be(merkle_root_int)
         r += ntime_bin
         r += struct.pack(">I", self.nBits)
@@ -182,6 +200,8 @@ class BlockTemplate(halfnode.CBlock):
         r = []
         r.append(struct.pack("<i", self.nVersion))
         r.append(util.ser_uint256(self.hashPrevBlock))
+        r.append(util.ser_uint256(self.hashStateRoot))
+        r.append(util.ser_uint256(self.hashUTXORoot))
         r.append(util.ser_uint256(self.hashMerkleRoot))
         r.append(struct.pack("<I", self.nTime))
         r.append(struct.pack("<I", self.nBits))
