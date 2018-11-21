@@ -185,6 +185,8 @@ class CBlock(object):
         self.nVersion = 1
         self.hashPrevBlock = 0
         self.hashMerkleRoot = 0
+        self.hashStateRoot = 0
+        self.hashUTXORoot = 0
         self.nTime = 0
         self.nBits = 0
         self.nNonce = 0
@@ -196,6 +198,8 @@ class CBlock(object):
         self.nVersion = struct.unpack("<i", f.read(4))[0]
         self.hashPrevBlock = deser_uint256(f)
         self.hashMerkleRoot = deser_uint256(f)
+        self.hashStateRoot = deser_uint256(f)
+        self.hashUTXORoot = deser_uint256(f)
         self.nTime = struct.unpack("<I", f.read(4))[0]
         self.nBits = struct.unpack("<I", f.read(4))[0]
         self.nNonce = struct.unpack("<I", f.read(4))[0]
@@ -208,6 +212,8 @@ class CBlock(object):
         r.append(struct.pack("<i", self.nVersion))
         r.append(ser_uint256(self.hashPrevBlock))
         r.append(ser_uint256(self.hashMerkleRoot))
+        r.append(ser_uint256(self.hashStateRoot))
+        r.append(ser_uint256(self.hashUTXORoot))
         r.append(struct.pack("<I", self.nTime))
         r.append(struct.pack("<I", self.nBits))
         r.append(struct.pack("<I", self.nNonce))
@@ -222,6 +228,8 @@ class CBlock(object):
            r.append(struct.pack("<i", self.nVersion))
            r.append(ser_uint256(self.hashPrevBlock))
            r.append(ser_uint256(self.hashMerkleRoot))
+           r.append(ser_uint256(self.hashStateRoot))
+           r.append(ser_uint256(self.hashUTXORoot))
            r.append(struct.pack("<I", self.nTime))
            r.append(struct.pack("<I", self.nBits))
            r.append(struct.pack("<I", self.nNonce))
@@ -253,7 +261,7 @@ class CBlock(object):
         return True
 
     def __repr__(self):
-        return "CBlock(nVersion=%i hashPrevBlock=%064x hashMerkleRoot=%064x nTime=%s nBits=%08x nNonce=%08x vtx=%s)" % (self.nVersion, self.hashPrevBlock, self.hashMerkleRoot, time.ctime(self.nTime), self.nBits, self.nNonce, repr(self.vtx))
+        return "CBlock(nVersion=%i hashPrevBlock=%064x hashMerkleRoot=%064x hashStateRoot=%064x hashUTXORoot=%064x nTime=%s nBits=%08x nNonce=%08x vtx=%s)" % (self.nVersion, self.hashPrevBlock, self.hashMerkleRoot, time.ctime(self.nTime), self.nBits, self.nNonce, repr(self.vtx))
 
 class msg_version(object):
     command = "version"
