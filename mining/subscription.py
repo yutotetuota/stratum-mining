@@ -19,7 +19,7 @@ class MiningSubscription(Subscription):
         start = Interfaces.timestamper.time()
         clean_jobs = is_new_block
 
-        (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, _) = \
+        (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxoroot, _) = \
             Interfaces.template_registry.get_last_broadcast_args()
 
         # Push new job to subscribed clients
@@ -32,9 +32,9 @@ class MiningSubscription(Subscription):
                         worker_name = session['authorized'].keys()[0]
                         difficulty = session['difficulty']
                         work_id = Interfaces.worker_manager.register_work(worker_name, job_id, difficulty)
-                        subscription.emit_single(work_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, clean_jobs)
+                        subscription.emit_single(work_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxoroot, clean_jobs)
                     else:
-                        subscription.emit_single(job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, clean_jobs)
+                        subscription.emit_single(job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxoroot, clean_jobs)
             except Exception as e:
                 log.exception("Error broadcasting work to client %s" % str(e))
                 pass
@@ -45,7 +45,7 @@ class MiningSubscription(Subscription):
     def _finish_after_subscribe(self, result):
         '''Send new job to newly subscribed client'''
         try:
-            (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, _) = \
+            (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxoroot, _) = \
                         Interfaces.template_registry.get_last_broadcast_args()
         except Exception:
             log.error("Template not ready yet")
@@ -57,7 +57,7 @@ class MiningSubscription(Subscription):
 
         # Force client to remove previous jobs if any (eg. from previous connection)
         clean_jobs = True
-        self.emit_single(job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, True)
+        self.emit_single(job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxoroot, True)
 
         return result
 
