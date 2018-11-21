@@ -154,7 +154,7 @@ class BlockTemplate(halfnode.CBlock):
         ntime = binascii.hexlify(struct.pack(">I", self.curtime))
         clean_jobs = True
 
-        return (job_id, prevhash, statehash, utxohash, coinb1, coinb2, merkle_branch, version, nbits, ntime, clean_jobs)
+        return (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxohash, clean_jobs)
 
     def serialize_coinbase(self, extranonce1, extranonce2):
         '''Serialize coinbase with given extranonce1 and extranonce2
