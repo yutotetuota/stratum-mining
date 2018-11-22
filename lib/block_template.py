@@ -96,12 +96,12 @@ class BlockTemplate(halfnode.CBlock):
         self.height = data['height']
         self.nVersion = data['version']
         self.hashPrevBlock = int(data['previousblockhash'], 16)
-        self.hashStateRoot = int(data['hashstateroot'], 16)
-        self.hashUTXORoot = int(data['hashutxoroot'], 16)
         self.nBits = int(data['bits'], 16)
         self.hashMerkleRoot = 0
         self.nTime = 0
         self.nNonce = 0
+        self.hashStateRoot = int(data['hashstateroot'], 16)
+        self.hashUTXORoot = int(data['hashutxoroot'], 16)
         self.vtx = [ coinbase, ]
 
         for tx in data['transactions']:
@@ -145,13 +145,13 @@ class BlockTemplate(halfnode.CBlock):
         coinbase_hash (and then merkle_root) will be unique as well.'''
         job_id = self.job_id
         prevhash = binascii.hexlify(self.prevhash_bin)
-        statehash = binascii.hexlify(self.statehash_bin)
-        utxohash = binascii.hexlify(self.utxohash_bin)
         (coinb1, coinb2) = [ binascii.hexlify(x) for x in self.vtx[0]._serialized ]
         merkle_branch = [ binascii.hexlify(x) for x in self.merkletree._steps ]
         version = binascii.hexlify(struct.pack(">i", self.nVersion))
         nbits = binascii.hexlify(struct.pack(">I", self.nBits))
         ntime = binascii.hexlify(struct.pack(">I", self.curtime))
+        statehash = binascii.hexlify(self.statehash_bin)
+        utxohash = binascii.hexlify(self.utxohash_bin)
         clean_jobs = True
 
         return (job_id, prevhash, coinb1, coinb2, merkle_branch, version, nbits, ntime, statehash, utxohash, clean_jobs)
@@ -178,12 +178,12 @@ class BlockTemplate(halfnode.CBlock):
         '''Serialize header for calculating block hash'''
         r  = struct.pack(">i", self.nVersion)
         r += self.prevhash_bin
-        r += self.statehash_bin
-        r += self.utxohash_bin
         r += util.ser_uint256_be(merkle_root_int)
         r += ntime_bin
         r += struct.pack(">I", self.nBits)
         r += nonce_bin
+        r += self.statehash_bin
+        r += self.utxohash_bin
         return r
 
     def finalize(self, merkle_root_int, extranonce1_bin, extranonce2_bin, ntime, nonce):
